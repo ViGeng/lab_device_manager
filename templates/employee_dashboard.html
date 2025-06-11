@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Employee Dashboard - Device Manager{% endblock %}
+
+{% block content %}
+<h2>Device Management</h2>
+<p>Welcome, {{ current_user.username }}!</p>
+
+{% if current_user.is_admin %}
+<!-- Add New Device Section (Admin Only) -->
+<div class="device-section" style="margin-bottom: 30px; padding: 15px;">
+    <h3 style="margin-bottom: 15px; font-size: 16px;">Add New Device</h3>
+    <form method="POST" action="{{ url_for('add_new_device') }}">
+        <div style="display: flex; gap: 10px; align-items: end; flex-wrap: wrap;">
+            <div style="margin-bottom: 0;">
+                <label for="name" style="font-size: 13px; margin-bottom: 3px; display: block;">Device Name</label>
+                <input type="text" id="name" name="name" required style="width: 180px; padding: 6px; font-size: 13px;">
+            </div>
+            <div style="margin-bottom: 0;">
+                <label for="quantity" style="font-size: 13px; margin-bottom: 3px; display: block;">Qty</label>
+                <input type="number" id="quantity" name="quantity" min="0" value="0" style="width: 70px; padding: 6px; font-size: 13px;">
+            </div>
+            <div style="margin-bottom: 0;">
+                <label for="notes" style="font-size: 13px; margin-bottom: 3px; display: block;">Notes</label>
+                <input type="text" id="notes" name="notes" style="width: 250px; padding: 6px; font-size: 13px;">
+            </div>
+            <button type="submit" class="btn btn-success" style="padding: 6px 12px; font-size: 13px;">Add</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+
+<!-- Available Devices Section -->
+<div class="device-section" style="margin-bottom: 30px; padding: 15px;">
+    <h3 style="margin-bottom: 15px; font-size: 16px;">Available Devices</h3>
+    {% if devices %}
+        <table class="compact-table">
+            <thead>
+                <tr>
+                    <th class="name-column">Name</th>
+                    <th class="quantity-column">Available Quantity</th>
+                    <th class="notes-column">Notes</th>
+                    <th class="actions-column">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for device in devices %}
+                <tr>
+                    <td class="name-column">{{ device.name }}</td>
+                    <td class="quantity-column">{{ device.quantity }}</td>
+                    <td class="notes-column">{{ device.notes or 'N/A' }}</td>
+                    <td class="actions actions-column">
+                        <form method="POST" action="{{ url_for('borrow_device', device_id=device.id) }}">
+                            {% if current_user.is_admin %}
+                            <select name="user_id" style="width: 80px; font-size: 11px; padding: 1px;">
+                                <option value="{{ current_user.id }}">{{ current_user.username }}</option>
+                                {% for user in all_users if user.id != current_user.id %}
+                                <option value="{{ user.id }}">{{ user.username }}</option>
+                                {% endfor %}
+                            </select>
+                            {% endif %}
+                            <input type="number" name="quantity" min="1" max="{{ device.quantity or 1 }}" value="1" {% if device.quantity == 0 %}disabled{% endif %}>
+                            <button type="submit" class="btn btn-success" {% if device.quantity == 0 %}disabled{% endif %}>Borrow</button>
+                        </form>
+                        
+                        <form method="POST" action="{{ url_for('return_device', device_id=device.id) }}">
+                            {% if current_user.is_admin %}
+                            <select name="user_id" style="width: 80px; font-size: 11px; padding: 1px;">
+                                <option value="{{ current_user.id }}">{{ current_user.username }}</option>
+                                {% for user in all_users if user.id != current_user.id %}
+                                <option value="{{ user.id }}">{{ user.username }}</option>
+                                {% endfor %}
+                            </select>
+                            {% endif %}
+                            <input type="number" name="quantity" min="1" value="1">
+                            <button type="submit" class="btn btn-warning">Return</button>
+                        </form>
+                        
+                        <form method="POST" action="{{ url_for('add_stock', device_id=device.id) }}">
+                            <input type="number" name="quantity" min="1" value="1">
+                            <button type="submit" class="btn btn-info">Add Stock</button>
+                        </form>
+                        
+                        {% if current_user.is_admin %}
+                        <form method="POST" action="{{ url_for('delete_device', device_id=device.id) }}">
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?');">Del</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No devices found.</p>
+    {% endif %}
+</div>
+
+<!-- My Borrowed Devices Section -->
+<div class="device-section" style="margin-bottom: 30px; padding: 15px;">
+    <h3 style="margin-bottom: 15px; font-size: 16px;">My Borrowed Devices</h3>
+    {% set borrowed_logs = current_user.logs | selectattr('transaction_type', 'equalto', 'borrow') | list %}
+    {% set returned_logs = current_user.logs | selectattr('transaction_type', 'equalto', 'return') | list %}
+    
+    {% if borrowed_logs %}
+        <table class="compact-table">
+            <thead>
+                <tr>
+                    <th class="name-column">Device Name</th>
+                    <th class="quantity-column">Quantity Borrowed</th>
+                    <th>Borrow Date</th>
+                    <th class="notes-column">Notes</th>
+                    <th class="actions-column">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for borrow_log in borrowed_logs %}
+                {% set returned_qty = returned_logs | selectattr('device_id', 'equalto', borrow_log.device_id) | map(attribute='quantity_transacted') | sum %}
+                {% set net_borrowed = borrow_log.quantity_transacted - returned_qty %}
+                {% if net_borrowed > 0 %}
+                <tr>
+                    <td class="name-column">{{ borrow_log.device.name }}</td>
+                    <td class="quantity-column">{{ net_borrowed }}</td>
+                    <td>{{ borrow_log.transaction_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="notes-column">{{ borrow_log.device.notes or 'N/A' }}</td>
+                    <td class="actions actions-column">
+                        <form method="POST" action="{{ url_for('return_device', device_id=borrow_log.device_id) }}" style="display:inline;">
+                            <input type="number" name="quantity" min="1" max="{{ net_borrowed }}" value="1" style="width: 60px;">
+                            <button type="submit" class="btn btn-warning">Return</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>You have not borrowed any devices yet.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

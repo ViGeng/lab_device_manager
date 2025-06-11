@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Device Manager{% endblock %}
+
+{% block content %}
+<h2>Admin Dashboard</h2>
+<p>Welcome, {{ current_user.username }}!</p>
+<p>From here you can manage devices and users, or use the unified device management interface.</p>
+<div class="dashboard-links">
+    <a href="{{ url_for('employee_dashboard') }}" class="btn">Device Management</a>
+    <a href="{{ url_for('manage_employees') }}" class="btn">Manage Users</a>
+</div>
+
+<h3>Quick Stats</h3>
+<ul>
+    <li>Total Device Types: {{ Device.query.count() }}</li>
+    <li>Total Users: {{ User.query.count() }}</li>
+    <li>Device Types with Stock: {{ Device.query.filter(Device.quantity > 0).count() }}</li>
+    <li>Device Types Out of Stock: {{ Device.query.filter(Device.quantity == 0).count() }}</li>
+</ul>
+
+<!-- Placeholder for more admin-specific content or reports -->
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Add any admin-specific JavaScript here if needed
+</script>
+{% endblock %}

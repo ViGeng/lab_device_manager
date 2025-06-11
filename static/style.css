@@ -1,0 +1,546 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    margin-top: 30px;
+    border-radius: 8px;
+}
+
+header {
+    background: #333;
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
+    border-bottom: #0779e4 3px solid;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+nav {
+    background: #444;
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+}
+
+nav ul {
+    padding: 0;
+    list-style: none;
+    margin: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin-right: 20px;
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+nav a:hover {
+    color: #0779e4;
+}
+
+.flash-messages {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px 0;
+}
+
+.flash-messages li {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    color: #fff;
+}
+
+.flash-messages .success { background: #28a745; }
+.flash-messages .danger { background: #dc3545; }
+.flash-messages .warning { background: #ffc107; color: #333; }
+.flash-messages .info { background: #17a2b8; }
+
+
+/* Base table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    font-size: 13px;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #f1f3f4;
+}
+
+/* Compact table styling for better space utilization */
+.compact-table {
+    font-size: 13px;
+}
+
+.compact-table th,
+.compact-table td {
+    padding: 6px 8px;
+}
+
+.compact-table th {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.actions form {
+    display: inline-block;
+    margin-right: 3px;
+    margin-bottom: 2px;
+    vertical-align: top;
+}
+
+.actions input[type="number"] {
+    width: 45px;
+    padding: 2px 4px;
+    font-size: 12px;
+    margin: 0 2px 0 0;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+}
+
+.actions select {
+    width: 80px;
+    padding: 2px 4px;
+    font-size: 11px;
+    margin: 0 2px 0 0;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    background-color: #fff;
+    vertical-align: top;
+}
+
+.actions .btn {
+    padding: 4px 8px;
+    font-size: 12px;
+    margin: 0;
+    border-radius: 3px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+/* Column width and alignment utilities */
+.id-column {
+    width: 50px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.actions-column {
+    width: 1%;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.role-column {
+    width: 80px;
+    text-align: center;
+}
+
+.quantity-column {
+    width: 80px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.name-column {
+    font-weight: 500;
+    max-width: 200px;
+}
+
+.notes-column {
+    max-width: 250px;
+    word-wrap: break-word;
+    font-size: 13px;
+    color: #666;
+}
+
+.borrowed-devices-column {
+    font-size: 13px;
+    max-width: 300px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 8px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    outline: none;
+    color: #fff;
+    background-color:rgb(182, 186, 191);
+    border: none;
+    border-radius: 4px;
+    box-shadow: 0 2px #999;
+}
+
+.btn:hover {background-color: #0069d9}
+.btn:active {
+    background-color: #0062cc;
+    box-shadow: 0 1px #666;
+    transform: translateY(1px);
+}
+
+.btn-danger {
+    background-color: #dc3545;
+}
+.btn-danger:hover {background-color: #c82333}
+.btn-danger:active {background-color: #bd2130}
+
+
+.btn-success {
+    background-color: #28a745;
+}
+.btn-success:hover {background-color: #218838}
+.btn-success:active {background-color: #1e7e34}
+
+.btn-warning {
+    background-color: #ffc107;
+    color: #333;
+}
+.btn-warning:hover {
+    background-color: #e0a800;
+    color: #333;
+}
+.btn-warning:active {
+    background-color: #d39e00;
+    color: #333;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+}
+.btn-info:hover {
+    background-color: #138496;
+}
+.btn-info:active {
+    background-color: #117a8b;
+}
+
+/* Out of stock status styling to match button layout */
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* Disabled button styling */
+.btn:disabled,
+.btn[disabled] {
+    background-color: #6c757d !important;
+    color: #fff !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}
+
+.btn:disabled:hover,
+.btn[disabled]:hover {
+    background-color: #6c757d !important;
+    color: #fff !important;
+    transform: none !important;
+    box-shadow: 0 2px #999 !important;
+}
+
+/* Disabled input styling */
+input:disabled,
+input[disabled] {
+    background-color: #e9ecef !important;
+    border-color: #ced4da !important;
+    color: #6c757d !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}
+
+/* Disabled input styling for out of stock items */
+.actions input[disabled] {
+    background-color: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+    color: #6c757d !important;
+    cursor: not-allowed;
+}
+
+/* Form styling */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"],
+.form-group select {
+    width: calc(100% - 22px);
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.form-group input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+.auth-form {
+    width: 300px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+.auth-form h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.dashboard-links {
+    margin-bottom: 20px;
+}
+.dashboard-links a {
+    margin-right: 10px;
+    text-decoration: none;
+    color: #007bff;
+}
+.dashboard-links a:hover {
+    text-decoration: underline;
+}
+
+/* Admin Dashboard Button Enhancements */
+.dashboard-links .btn {
+    padding: 12px 25px; /* Larger padding */
+    font-size: 16px; /* Larger font size */
+    margin-bottom: 10px; /* Add some space below buttons if they wrap */
+    display: inline-block; /* Ensure proper block behavior for margin */
+}
+
+/* Specific button styling for better visual distinction with high contrast */
+.dashboard-links a[href*="employee_dashboard"] {
+    background-color: #17a2b8 !important; /* Teal */
+    color: white !important;
+    text-decoration: none !important;
+}
+.dashboard-links a[href*="employee_dashboard"]:hover {
+    background-color: #138496 !important;
+    color: white !important;
+    text-decoration: none !important;
+}
+
+.dashboard-links a[href*="manage_employees"] {
+    background-color: #28a745 !important; /* Green */
+    color: white !important;
+    text-decoration: none !important;
+}
+.dashboard-links a[href*="manage_employees"]:hover {
+    background-color: #218838 !important;
+    color: white !important;
+    text-decoration: none !important;
+}
+
+/* Force high contrast buttons - maximum specificity */
+.dashboard-links a.btn[href*="employee_dashboard"],
+.dashboard-links .btn[href*="employee_dashboard"] {
+    background-color: #17a2b8 !important;
+    color: white !important;
+    text-decoration: none !important;
+    border: none !important;
+}
+
+.dashboard-links a.btn[href*="manage_employees"],
+.dashboard-links .btn[href*="manage_employees"] {
+    background-color: #28a745 !important;
+    color: white !important;
+    text-decoration: none !important;
+    border: none !important;
+}
+
+/* Device section styling for unified employee dashboard */
+.device-section {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 25px;
+}
+
+.device-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #495057;
+    border-bottom: 2px solid #6c757d;
+    padding-bottom: 8px;
+    font-size: 16px;
+}
+
+/* Enhanced button styling for device actions */
+.btn-warning {
+    background-color: #ffc107;
+    color: #333;
+}
+.btn-warning:hover {
+    background-color: #e0a800;
+    color: #333;
+}
+.btn-warning:active {
+    background-color: #d39e00;
+    color: #333;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+}
+.btn-info:hover {
+    background-color: #138496;
+}
+.btn-info:active {
+    background-color: #117a8b;
+}
+
+/* Improved spacing for action buttons in tables */
+.actions form {
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+.actions input[type="number"] {
+    width: 60px;
+    margin-right: 5px;
+    padding: 4px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+/* Better spacing for the add device form */
+.device-section form {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+/* Compact table styling for device management */
+.device-section table {
+    font-size: 14px;
+}
+
+.device-section th, 
+.device-section td {
+    padding: 8px 6px;
+    vertical-align: top;
+}
+
+.device-section th {
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Compact actions column */
+.device-section .actions {
+    width: 1%;
+    white-space: nowrap;
+}
+
+.device-section .actions form {
+    display: inline-block;
+    margin: 1px;
+    vertical-align: top;
+}
+
+.device-section .actions input[type="number"] {
+    width: 45px;
+    padding: 2px 4px;
+    font-size: 12px;
+    margin: 0 2px 0 0;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+}
+
+.device-section .actions .btn {
+    padding: 4px 8px;
+    font-size: 12px;
+    margin: 0;
+    border-radius: 3px;
+    line-height: 1.2;
+}
+
+/* Compact device name and notes columns */
+.device-section td:first-child {
+    font-weight: 500;
+    max-width: 200px;
+}
+
+.device-section td:nth-child(3) {
+    max-width: 250px;
+    word-wrap: break-word;
+    font-size: 13px;
+    color: #666;
+}
+
+/* Quantity column styling */
+.device-section td:nth-child(2) {
+    text-align: center;
+    font-weight: 600;
+    width: 80px;
+}
+
+/* Stack action buttons vertically for very narrow screens */
+@media (max-width: 768px) {
+    .device-section .actions form {
+        display: block;
+        margin-bottom: 2px;
+    }
+    
+    .device-section .actions .btn {
+        width: 100%;
+        margin-bottom: 1px;
+    }
+}

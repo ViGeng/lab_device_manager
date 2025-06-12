@@ -1,10 +1,8 @@
 # Lab Device Management System
 
-A comprehensive Flask-based web application for managing laboratory equipment and devices. This system enables efficient tracking of device inventory, borrowing/returning processes, and user management with role-based access control.
+The Lab Device Management System centralizes laboratory equipment tracking for academic and research settings. It offers administrators minimal inventory control and enables staff/students to borrow and return devices with basic tracking.
 
-## Overview
-
-The Lab Device Management System is designed to streamline the management of laboratory equipment in academic or research environments. It provides a centralized platform where administrators can manage device inventory and users, while employees can easily borrow and return equipment with full transaction history tracking.
+Why not use Google Sheets or Excel? If we track who borrowed what, we need to build another software based on these tools. We just do not want to stack these tools on top of each other. This solution can also be extended or modified to fit specific needs, making it a flexible choice for device management.
 
 ## Screenshots
 
@@ -21,23 +19,15 @@ The Lab Device Management System is designed to streamline the management of lab
 
 ## Key Features
 
-### For Administrators
-- **Device Management**: Add, edit, and delete device types with quantity tracking
-- **User Management**: Create and manage employee and admin accounts
-- **Inventory Control**: Add stock, monitor device quantities
-- **Proxy Operations**: Perform borrowing/returning operations on behalf of other users
-- **Complete Oversight**: Access to all system functions
-### For Employees
-- **Device Browsing**: View available devices with real-time quantity information
-- **Self-Service Borrowing**: Borrow devices with automatic quantity validation
-- **Return Management**: Return borrowed devices with quantity specification
-- **Personal History**: Track currently borrowed items
-- **Stock Addition**: Add inventory to existing devices
+### For Admin
 
-### System Features
-- **Role-Based Access Control**: Separate admin and employee permissions
-- **Quantity Tracking**: Real-time inventory management with availability checks
-- **Responsive Design**: Clean, modern web interface that works on all devices
+- **Device Management**: create, add, borrow, return, and delete devices
+- **User Management**: Create and manage employee and admin accounts, see borrowing history
+
+### For Employee/Student
+- **Device Management**: add, borrow, and return devices
+- **Borrowing History**: View personal borrowing history
+
 
 ## Technology Stack
 
@@ -47,12 +37,14 @@ The Lab Device Management System is designed to streamline the management of lab
 - **Frontend**: Jinja2 templates with responsive CSS
 - **Security**: Werkzeug password hashing
 
-## Prerequisites
+
+
+## Installation & Deployment
+
+### Prerequisites
 
 - Python 3.7 or higher
 - pip (Python package installer)
-
-## Installation & Deployment
 
 ### Quick Start (Development)
 
@@ -62,71 +54,25 @@ The Lab Device Management System is designed to streamline the management of lab
    cd lab_device_manager
    ```
 
-2. **Create a virtual environment**
+2. **Create a virtual environment and install dependancies**
    ```bash
    python -m venv venv
-   ```
-
-3. **Activate the virtual environment**
-   - On macOS/Linux:
-     ```bash
-     source venv/bin/activate
-     ```
-   - On Windows:
-     ```bash
-     venv\Scripts\activate
-     ```
-
-4. **Install dependencies**
-   ```bash
+   source venv/bin/activate
    pip install -r requirements.txt
    ```
 
-5. **Run the application**
+3. **Run the application** use tmux or screen to keep it running in the background if you are deploying it
    ```bash
-   python app.py
+   flask create-db  # Create the database
+   flask create-admin  # Create an admin user.
+   flask run --host=0.0.0.0 --port=5001 # run on localhost:5001, change port if needed
    ```
 
-6. **Access the application**
-   - Open your web browser and go to: `http://localhost:5000`
-   - Default admin credentials:
+4. **Access the application**
+   - Open your web browser and go to: `http://HOST_NAME:5000`
+   - Default admin credentials: (change the hardcoded credentials in `app.py` for production)
      - Username: `admin`
-     - Password: `adminpassword`
-
-### Production Deployment
-
-For production deployment, consider the following security and performance improvements:
-
-1. **Change the secret key** in `app.py`:
-   ```python
-   app.config['SECRET_KEY'] = 'your-secure-random-secret-key'
-   ```
-
-2. **Change default admin password** immediately after first login
-
-3. **Use a production WSGI server** like Gunicorn:
-   ```bash
-   pip install gunicorn
-   gunicorn -w 4 -b 0.0.0.0:5000 app:app
-   ```
-
-4. **Set up a reverse proxy** (nginx recommended) for SSL termination
-
-5. **Use environment variables** for sensitive configuration
-
-## Database Management
-
-### Automatic Setup
-The application automatically creates the database and a default admin user on first run.
-
-### Manual Database Commands
-```bash
-# Initialize database
-flask init-db
-
-# Create admin user
-flask create-admin
-```
+     - Password: `admin`
 
 ## System Architecture
 
@@ -146,14 +92,6 @@ flask create-admin
 - `return`: User returns devices (increases inventory)
 - `add_stock`: Adding new inventory (increases inventory)
 
-## Security Considerations
-
-- Passwords are hashed using Werkzeug's secure password hashing
-- Session management handled by Flask-Login
-- CSRF protection should be added for production use
-- Change default secret key and admin password
-- Consider implementing rate limiting for production
-
 ## Troubleshooting
 
 1. **Port already in use**: Change port in `app.py` or kill existing process
@@ -163,8 +101,4 @@ flask create-admin
 
 ## License
 
-This project is open source. Please check the LICENSE file for details.
-
-## Support
-
-No official support is provided, but feel free to open issues for bugs or feature requests. Contributions are welcome!
+MIT License (MIT)

@@ -87,7 +87,7 @@ Why not use Google Sheets or Excel? If we track who borrowed what, we need to bu
 - id, name, quantity, notes
 
 **BorrowLog Table**
-- id, user_id, device_id, quantity_transacted, transaction_type, transaction_date
+- (user_id, device_id) quantity_borrowed
 
 ### Transaction Types
 - `borrow`: User borrows devices (decreases inventory)

@@ -44,25 +44,14 @@
                 <td class="name-column">{{ employee.username }}</td>
                 <td class="role-column">{% if employee.is_admin %}Admin{% else %}Employee{% endif %}</td>
                 <td class="borrowed-devices-column">
-                    {% set borrowed_logs = employee.logs | selectattr('transaction_type', 'equalto', 'borrow') | list %}
-                    {% set returned_logs = employee.logs | selectattr('transaction_type', 'equalto', 'return') | list %}
-                    
-                    {% if borrowed_logs %}
-                        {% set ns = namespace(has_borrowed=false) %}
-                        {% for borrow_log in borrowed_logs %}
-                            {% set returned_qty = returned_logs | selectattr('device_id', 'equalto', borrow_log.device_id) | map(attribute='quantity_transacted') | sum %}
-                            {% set net_borrowed = borrow_log.quantity_transacted - returned_qty %}
-                            {% if net_borrowed > 0 %}
-                                {% set ns.has_borrowed = true %}
+                    {% if employee.borrow_logs and employee.borrow_logs|selectattr('quantity_borrowed', '>', 0)|list %}
+                        {% for log in employee.borrow_logs %}
+                            {% if log.quantity_borrowed > 0 %}
                                 <div style="margin-bottom: 5px;">
-                                    <strong>{{ borrow_log.device.name }}</strong>: {{ net_borrowed }} unit(s)
-                                    <br><small style="color: #666;">Borrowed: {{ borrow_log.transaction_date.strftime('%Y-%m-%d') }}</small>
+                                    <strong>{{ log.device.name }}</strong>: {{ log.quantity_borrowed }} unit(s)
                                 </div>
                             {% endif %}
                         {% endfor %}
-                        {% if not ns.has_borrowed %}
-                            <span style="color: #6c757d;">None</span>
-                        {% endif %}
                     {% else %}
                         <span style="color: #6c757d;">None</span>
                     {% endif %}

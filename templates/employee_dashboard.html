@@ -99,33 +99,26 @@
 <!-- My Borrowed Devices Section -->
 <div class="device-section" style="margin-bottom: 30px; padding: 15px;">
     <h3 style="margin-bottom: 15px; font-size: 16px;">My Borrowed Devices</h3>
-    {% set borrowed_logs = current_user.logs | selectattr('transaction_type', 'equalto', 'borrow') | list %}
-    {% set returned_logs = current_user.logs | selectattr('transaction_type', 'equalto', 'return') | list %}
-    
-    {% if borrowed_logs %}
+    {% if current_user.borrow_logs and current_user.borrow_logs|selectattr('quantity_borrowed', '>', 0)|list %}
         <table class="compact-table">
             <thead>
                 <tr>
                     <th class="name-column">Device Name</th>
                     <th class="quantity-column">Quantity Borrowed</th>
-                    <th>Borrow Date</th>
                     <th class="notes-column">Notes</th>
                     <th class="actions-column">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for borrow_log in borrowed_logs %}
-                {% set returned_qty = returned_logs | selectattr('device_id', 'equalto', borrow_log.device_id) | map(attribute='quantity_transacted') | sum %}
-                {% set net_borrowed = borrow_log.quantity_transacted - returned_qty %}
-                {% if net_borrowed > 0 %}
+                {% for log in current_user.borrow_logs %}
+                {% if log.quantity_borrowed > 0 %}
                 <tr>
-                    <td class="name-column">{{ borrow_log.device.name }}</td>
-                    <td class="quantity-column">{{ net_borrowed }}</td>
-                    <td>{{ borrow_log.transaction_date.strftime('%Y-%m-%d %H:%M') }}</td>
-                    <td class="notes-column">{{ borrow_log.device.notes or 'N/A' }}</td>
+                    <td class="name-column">{{ log.device.name }}</td>
+                    <td class="quantity-column">{{ log.quantity_borrowed }}</td>
+                    <td class="notes-column">{{ log.device.notes or 'N/A' }}</td>
                     <td class="actions actions-column">
-                        <form method="POST" action="{{ url_for('return_device', device_id=borrow_log.device_id) }}" style="display:inline;">
-                            <input type="number" name="quantity" min="1" max="{{ net_borrowed }}" value="1" style="width: 60px;">
+                        <form method="POST" action="{{ url_for('return_device', device_id=log.device_id) }}" style="display:inline;">
+                            <input type="number" name="quantity" min="1" max="{{ log.quantity_borrowed }}" value="1" style="width: 60px;">
                             <button type="submit" class="btn btn-warning">Return</button>
                         </form>
                     </td>
@@ -135,7 +128,7 @@
             </tbody>
         </table>
     {% else %}
-        <p>You have not borrowed any devices yet.</p>
+        <p>You have not borrowed any devices currently.</p>
     {% endif %}
 </div>
 

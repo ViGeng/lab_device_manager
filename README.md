@@ -14,6 +14,8 @@ Why not use Google Sheets or Excel? If we track who borrowed what, we need to bu
 ![Admin Dashboard](assets/image-2.png)
 ![Employee Dashboard](assets/image-3.png)
 ![Login](assets/image-4.png)
+![pad user](assets/pad-user.png)
+![pad device](assets/pad-device.png)
 
 </details>
 

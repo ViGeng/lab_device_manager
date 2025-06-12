@@ -44,22 +44,17 @@ class Device(db.Model):
     def __repr__(self):
         return f'<Device {self.name} (Qty: {self.quantity})>'
 
-# Revised BorrowLog Model
+# Revised BorrowLog Model to track current borrowed quantities
 class BorrowLog(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    device_id = db.Column(db.Integer, db.ForeignKey('device.id'), nullable=False) # FK to the revised Device model
-    quantity_transacted = db.Column(db.Integer, nullable=False) # Number of units borrowed, returned, or stock adjusted
-    transaction_type = db.Column(db.String(50), nullable=False) # e.g., 'borrow', 'return', 'add_stock', 'remove_stock'
-    transaction_date = db.Column(db.DateTime, default=db.func.current_timestamp(), nullable=False)
-    
-    user = db.relationship('User', backref=db.backref('logs', lazy=True))
-    device = db.relationship('Device', backref=db.backref('logs', lazy=True))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    device_id = db.Column(db.Integer, db.ForeignKey('device.id'), primary_key=True)
+    quantity_borrowed = db.Column(db.Integer, nullable=False, default=0) # Number of units currently borrowed
 
-    # Removed: device_id (old meaning), trivial_device_id, quantity_borrowed (old name), borrow_date, return_date
+    user = db.relationship('User', backref=db.backref('borrow_logs', lazy=True))
+    device = db.relationship('Device', backref=db.backref('borrow_logs', lazy=True))
 
     def __repr__(self):
-        return f'<Log: User {self.user_id} {self.transaction_type} {self.quantity_transacted} of Device {self.device_id} on {self.transaction_date}>'
+        return f'<BorrowLog: User {self.user_id} currently has {self.quantity_borrowed} of Device {self.device_id}>'
 
 
 @login_manager.user_loader
@@ -141,18 +136,6 @@ def add_new_device():
     return redirect(url_for('employee_dashboard'))
 
 # --- Admin Routes ---
-@app.route('/admin/devices', methods=['GET', 'POST'])
-@login_required
-def manage_devices():
-    # Redirect to the unified Device Management page
-    if request.method == 'POST':
-        # Handle POST requests for adding new devices via employee_dashboard
-        return redirect(url_for('employee_dashboard'))
-    else:
-        # Redirect GET requests to the unified interface
-        flash('Device management has been moved to the unified Device Management page.', 'info')
-        return redirect(url_for('employee_dashboard'))
-
 @app.route('/admin/devices/delete/<int:device_id>', methods=['POST'])
 @login_required
 def delete_device(device_id):
@@ -218,37 +201,38 @@ def delete_employee(user_id):
 @login_required
 def borrow_device(device_id):
     device = Device.query.get_or_404(device_id)
-    quantity = request.form.get('quantity', 1, type=int)
+    quantity_to_borrow = request.form.get('quantity', 1, type=int)
     
-    # Allow admins to borrow on behalf of other users
     target_user_id = current_user.id
     if current_user.is_admin and 'user_id' in request.form:
         target_user_id = request.form.get('user_id', current_user.id, type=int)
-        # Verify the target user exists
         target_user = User.query.get(target_user_id)
         if not target_user:
             flash('Invalid user selected.', 'danger')
             return redirect(url_for('employee_dashboard'))
     
-    if quantity <= 0:
+    if quantity_to_borrow <= 0:
         flash('Quantity must be positive.', 'warning')
-    elif device.quantity >= quantity:
-        device.quantity -= quantity
-        log = BorrowLog(
-            device_id=device.id, 
-            user_id=target_user_id,
-            quantity_transacted=quantity,
-            transaction_type='borrow'
-        )
-        db.session.add(log)
+    elif device.quantity >= quantity_to_borrow:
+        # Check if a borrow log already exists for this user and device
+        borrow_log = BorrowLog.query.filter_by(user_id=target_user_id, device_id=device.id).first()
+        if borrow_log:
+            # Update existing log
+            borrow_log.quantity_borrowed += quantity_to_borrow
+        else:
+            # Create new log
+            borrow_log = BorrowLog(
+                user_id=target_user_id,
+                device_id=device.id,
+                quantity_borrowed=quantity_to_borrow
+            )
+            db.session.add(borrow_log)
+        
+        device.quantity -= quantity_to_borrow
         db.session.commit()
         
-        # Customize the flash message based on who borrowed
-        if target_user_id == current_user.id:
-            flash(f"You have borrowed {quantity} {device.name}(s).", 'success')
-        else:
-            target_user = User.query.get(target_user_id)
-            flash(f"{target_user.username} has borrowed {quantity} {device.name}(s).", 'success')
+        user_for_flash = User.query.get(target_user_id)
+        flash(f"{user_for_flash.username} has borrowed {quantity_to_borrow} {device.name}(s). Total borrowed: {borrow_log.quantity_borrowed}.", 'success')
     else:
         flash(f"Not enough {device.name} available. Only {device.quantity} in stock.", 'warning')
     return redirect(url_for('employee_dashboard'))
@@ -257,42 +241,60 @@ def borrow_device(device_id):
 @login_required
 def return_device(device_id):
     device = Device.query.get_or_404(device_id)
-    quantity = request.form.get('quantity', 1, type=int)
-    
-    # Allow admins to return on behalf of other users
+    quantity_to_return = request.form.get('quantity', 1, type=int)
+
     target_user_id = current_user.id
+    user_for_flash = current_user
+
     if current_user.is_admin and 'user_id' in request.form:
-        target_user_id = request.form.get('user_id', current_user.id, type=int)
-        # Verify the target user exists
-        target_user = User.query.get(target_user_id)
-        if not target_user:
-            flash('Invalid user selected.', 'danger')
+        try:
+            selected_user_id = int(request.form.get('user_id'))
+            selected_user = User.query.get(selected_user_id)
+            if selected_user:
+                target_user_id = selected_user_id
+                user_for_flash = selected_user
+            else:
+                flash('Invalid user selected for return.', 'danger')
+                return redirect(url_for('employee_dashboard'))
+        except ValueError:
+            flash('Invalid user ID format.', 'danger')
             return redirect(url_for('employee_dashboard'))
-    
-    if quantity <= 0:
-        flash('Quantity must be positive.', 'warning')
-    else:
-        device.quantity += quantity
-        log = BorrowLog(
-            device_id=device.id, 
-            user_id=target_user_id,
-            quantity_transacted=quantity,
-            transaction_type='return'
-        )
-        db.session.add(log)
-        db.session.commit()
+
+    if quantity_to_return <= 0:
+        flash('Quantity to return must be positive.', 'warning')
+        return redirect(url_for('employee_dashboard'))
+
+    borrow_log = BorrowLog.query.filter_by(
+        device_id=device.id,
+        user_id=target_user_id
+    ).first()
+
+    if borrow_log and borrow_log.quantity_borrowed >= quantity_to_return:
+        device.quantity += quantity_to_return
+        borrow_log.quantity_borrowed -= quantity_to_return
         
-        # Customize the flash message based on who returned
+        if borrow_log.quantity_borrowed == 0:
+            db.session.delete(borrow_log)
+        
+        db.session.commit()
         if target_user_id == current_user.id:
-            flash(f"You have returned {quantity} {device.name}(s).", 'success')
+            flash(f"You have returned {quantity_to_return} {device.name}(s).", 'success')
         else:
-            target_user = User.query.get(target_user_id)
-            flash(f"{target_user.username} has returned {quantity} {device.name}(s).", 'success')
+            flash(f"{quantity_to_return} {device.name}(s) returned for {user_for_flash.username}.", 'success')
+    elif borrow_log:
+        flash(f'{user_for_flash.username} cannot return {quantity_to_return} {device.name}(s). They only have {borrow_log.quantity_borrowed} borrowed.', 'warning')
+    else:
+        flash(f'No active borrow record found for {device.name} by {user_for_flash.username} to return.', 'danger')
     return redirect(url_for('employee_dashboard'))
 
 @app.route('/add_stock/<int:device_id>', methods=['POST'])
 @login_required
 def add_stock(device_id):
+    # Ensure only admins can add stock
+    if not current_user.is_admin:
+        flash('Access denied: Admins only.', 'danger')
+        return redirect(url_for('employee_dashboard'))
+
     device = Device.query.get_or_404(device_id)
     quantity = request.form.get('quantity', 1, type=int)
     
@@ -300,15 +302,9 @@ def add_stock(device_id):
         flash('Quantity must be positive.', 'warning')
     else:
         device.quantity += quantity
-        log = BorrowLog(
-            device_id=device.id, 
-            user_id=current_user.id,
-            quantity_transacted=quantity,
-            transaction_type='add_stock'
-        )
-        db.session.add(log)
+        # Removed BorrowLog creation as it's not for stock transactions anymore
         db.session.commit()
-        flash(f"Added {quantity} {device.name}(s) to stock.", 'success')
+        flash(f"Added {quantity} {device.name}(s) to stock. Total now: {device.quantity}.", 'success')
     return redirect(url_for('employee_dashboard'))
 
 
@@ -336,14 +332,7 @@ def create_admin_command():
         print(f"Admin user '{username}' created with password '{password}'.")
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all() # Creates DB if it doesn't exist, for simplicity during dev
-        # Create a default admin if none exists
-        if not User.query.filter_by(is_admin=True).first():
-            admin = User(username='admin', is_admin=True)
-            admin.set_password('adminpassword') # CHANGE THIS
-            db.session.add(admin)
-            db.session.commit()
-            print("Default admin user 'admin' with password 'adminpassword' created.")
+    # Removed automatic db.create_all() and admin creation from here.
+    # Use 'flask init-db' and 'flask create-admin' CLI commands instead.
     app.run(host='0.0.0.0', port=5000, debug=True)
 

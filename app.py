@@ -334,5 +334,5 @@ def create_admin_command():
 if __name__ == '__main__':
     # Removed automatic db.create_all() and admin creation from here.
     # Use 'flask init-db' and 'flask create-admin' CLI commands instead.
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='127.0.0.1', port=80, debug=True)
 
